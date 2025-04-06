@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "743164553880",
+    "project_id": "kalmora",
+    "storage_bucket": "kalmora.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:743164553880:android:c4ec469c4cf1f587a5feed",
+        "android_client_info": {
+          "package_name": "com.kalmora.kalmora"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhI9v5QsM_Dn_w5tVoV1wzoQJ1FZTDKz8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

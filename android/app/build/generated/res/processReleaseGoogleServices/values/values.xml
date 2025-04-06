@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">743164553880</string>
+    <string name="google_api_key" translatable="false">AIzaSyBhI9v5QsM_Dn_w5tVoV1wzoQJ1FZTDKz8</string>
+    <string name="google_app_id" translatable="false">1:743164553880:android:c4ec469c4cf1f587a5feed</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBhI9v5QsM_Dn_w5tVoV1wzoQJ1FZTDKz8</string>
+    <string name="google_storage_bucket" translatable="false">kalmora.firebasestorage.app</string>
+    <string name="project_id" translatable="false">kalmora</string>
+</resources>
