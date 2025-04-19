@@ -1,6 +1,6 @@
 # Kalmora - Voice Emotion Journaling App
 
-![Kalmora Logo](docs/screenshots/app_logo.png)
+![kalmora_logo](https://github.com/user-attachments/assets/696e54c9-b0a5-434f-9270-6a25ce445328)
 
 Kalmora is an innovative mobile journaling application that uses voice emotion detection technology for better emotional awareness and mental wellness. Unlike traditional journaling apps that rely on self-reported emotions, Kalmora objectively detects emotional states through voice analysis.
 
