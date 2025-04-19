@@ -3,7 +3,7 @@ import '../../../authentication/view/login_page.dart';
 import '../../../authentication/view/signup_page.dart';
 
 class AboutScreen extends StatelessWidget {
-  const AboutScreen({super.key}); // Pass key to superclass
+  const AboutScreen({super.key}); 
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +59,7 @@ class AboutScreen extends StatelessWidget {
 }
 
 class AboutScreen2 extends StatelessWidget {
-  const AboutScreen2({super.key}); // Pass key to superclass
+  const AboutScreen2({super.key}); 
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +115,7 @@ class AboutScreen2 extends StatelessWidget {
 }
 
 class AboutScreen3 extends StatelessWidget {
-  const AboutScreen3({super.key}); // Pass key to superclass
+  const AboutScreen3({super.key}); 
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +171,7 @@ class AboutScreen3 extends StatelessWidget {
 }
 
 class FinalScreen extends StatelessWidget {
-  const FinalScreen({super.key}); // Pass key to superclass
+  const FinalScreen({super.key}); 
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +210,7 @@ class FinalScreen extends StatelessWidget {
               ),
               SizedBox(height: 40),
               Image.asset(
-                "assets/images/kalmora_logo.png", // Ensure this image exists
+                "assets/images/kalmora_logo.png", 
                 width: 300,
                 height: 350,
                 fit: BoxFit.cover,
@@ -225,7 +225,7 @@ class FinalScreen extends StatelessWidget {
               SizedBox(height: 8),
               ElevatedButton(
                 onPressed: () {
-                  // Navigate to the SignUp screen when clicked
+                  
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => SignupPage()),
@@ -250,7 +250,7 @@ class FinalScreen extends StatelessWidget {
               SizedBox(height: 1),
               GestureDetector(
                 onTap: () {
-                  // Navigate to the login page
+                  
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => LoginPage()),
@@ -260,8 +260,8 @@ class FinalScreen extends StatelessWidget {
                   text: TextSpan(
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.black, // Ensure the text color is black or as required
-                      fontFamily: Theme.of(context).textTheme.titleSmall?.fontFamily, // Use the same font as the theme
+                      color: Colors.black, 
+                      fontFamily: Theme.of(context).textTheme.titleSmall?.fontFamily, 
                     ),
                     children: [
                       TextSpan(text: "Already have an account? "),

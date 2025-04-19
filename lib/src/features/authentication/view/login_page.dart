@@ -44,9 +44,9 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _checkIfUserIsLoggedIn() async {
     User? currentUser = await _controller.checkCurrentUser();
     if (currentUser != null && mounted) {
-      // User is already logged in, navigate to home page
-      // Uncomment and modify this to navigate to your home page
-      // Navigator.pushReplacementNamed(context, '/home');
+      
+      
+      
     }
   }
 
@@ -58,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // Handle login function to avoid async gap warning
+  
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -72,10 +72,10 @@ class _LoginPageState extends State<LoginPage> {
         );
 
         if (userCredential != null) {
-          // Save remember me preference
+          
           await _controller.saveRememberMePreference(_rememberMe, _emailController.text);
 
-          // Save user model to Firestore
+          
           LoginPageModel model = LoginPageModel(
             username: _usernameController.text.trim(),
             email: _emailController.text.trim(),
@@ -84,11 +84,11 @@ class _LoginPageState extends State<LoginPage> {
 
           await _controller.saveUserData(model, userCredential.user!.uid);
 
-          // Navigate to dashboard
+          
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => DashboardPage(), // Replace with your actual dashboard screen
+              builder: (context) => DashboardPage(), 
             ),
           );
         }
@@ -127,7 +127,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Handle forgot password function to avoid async gap warning
+  
   void _handleForgotPassword() async {
     if (_emailController.text.isNotEmpty) {
       try {
@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Microphone icon
+                    
                     Icon(
                       Icons.mic_none_rounded,
                       size: 50,
@@ -174,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Title
+                    
                     const Text(
                       'Welcome',
                       style: TextStyle(
@@ -194,7 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 40),
 
-                    // Username field
+                    
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFD5C9A6),
@@ -214,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Email field
+                    
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFD5C9A6),
@@ -235,7 +235,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Password field
+                    
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFD5C9A6),
@@ -267,7 +267,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 10),
 
-                    // Remember me checkbox
+                    
                     Row(
                       children: [
                         SizedBox(
@@ -304,7 +304,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 30),
 
-                    // Sign in button
+                    
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -319,7 +319,7 @@ class _LoginPageState extends State<LoginPage> {
                             red: 0xD5.toDouble(),
                             green: 0xC9.toDouble(),
                             blue: 0xA6.toDouble(),
-                            alpha: (0.7 * 255), // Keep it as a double
+                            alpha: (0.7 * 255), 
                           ),
                         ),
                         child: _isLoading
@@ -344,7 +344,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Forgot password
+                    
                     GestureDetector(
                       onTap: _handleForgotPassword,
                       child: const Center(
@@ -361,7 +361,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Don't have an account
+                    
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -375,7 +375,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            // Navigate to signup page
+                            
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => SignupPage()),

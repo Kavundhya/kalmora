@@ -7,7 +7,7 @@ class LoginPageController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Login with email and password
+  
   Future<UserCredential?> loginWithEmailAndPassword(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -20,7 +20,7 @@ class LoginPageController {
     }
   }
 
-  // Save user data to Firestore
+  
   Future<void> saveUserData(LoginPageModel model, String uid) async {
     try {
       await _firestore.collection('users').doc(uid).set(model.toMap());
@@ -29,7 +29,7 @@ class LoginPageController {
     }
   }
 
-  // Get user data from Firestore
+  
   Future<LoginPageModel?> getUserData(String uid) async {
     try {
       DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
@@ -42,7 +42,7 @@ class LoginPageController {
     }
   }
 
-  // Save remember me preference
+  
   Future<void> saveRememberMePreference(bool rememberMe, String email) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('rememberMe', rememberMe);
@@ -53,7 +53,7 @@ class LoginPageController {
     }
   }
 
-  // Get remember me preference
+  
   Future<Map<String, dynamic>> getRememberMePreference() async {
     final prefs = await SharedPreferences.getInstance();
     bool rememberMe = prefs.getBool('rememberMe') ?? false;
@@ -65,7 +65,7 @@ class LoginPageController {
     };
   }
 
-  // Forgot password functionality
+  
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
@@ -74,17 +74,17 @@ class LoginPageController {
     }
   }
 
-  // Check if user is already logged in
+  
   Future<User?> checkCurrentUser() async {
     return _auth.currentUser;
   }
 
-  // Sign out user
+  
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
-  // Handle Firebase Authentication errors
+  
   String _handleFirebaseAuthError(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
@@ -108,13 +108,13 @@ class LoginPageController {
     }
   }
 
-  // Validate form fields
+  
   String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Email is required';
     }
 
-    // Simple email validation regex
+    
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(value)) {
       return 'Enter a valid email address';

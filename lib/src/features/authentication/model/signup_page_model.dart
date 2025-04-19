@@ -9,7 +9,7 @@ class SignupPageModel {
     this.password = '',
   });
 
-  // Convert model to a Map for Firebase
+  
   Map<String, dynamic> toMap() {
     return {
       'username': username,
@@ -18,7 +18,7 @@ class SignupPageModel {
     };
   }
 
-  // Create model from a Map (from Firebase)
+  
   factory SignupPageModel.fromMap(Map<String, dynamic> map) {
     return SignupPageModel(
       username: map['username'] ?? '',
@@ -26,7 +26,7 @@ class SignupPageModel {
     );
   }
 
-  // Create a copy of this model with given fields replaced with new values
+  
   SignupPageModel copyWith({
     String? username,
     String? email,

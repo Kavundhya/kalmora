@@ -1,5 +1,3 @@
-
-// lib/src/models/journal_entry_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class JournalEntryModel {
@@ -41,15 +39,15 @@ class JournalEntryModel {
   }
 
   factory JournalEntryModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map;
     return JournalEntryModel(
       id: doc.id,
       userId: data['userId'] ?? '',
       audioFileUrl: data['audioFileUrl'] ?? '',
-      localAudioPath: '', // This will be set when downloaded
+      localAudioPath: '',
       recordedDateTime: data['recordedDateTime'] ?? '',
       emotion: data['emotion'] ?? '',
-      suggestions: List<String>.from(data['suggestions'] ?? []),
+      suggestions: List.from(data['suggestions'] ?? []),
       voiceAnalysis: data['voiceAnalysis'] ?? '',
       positiveThought: data['positiveThought'] ?? '',
       isSync: true,

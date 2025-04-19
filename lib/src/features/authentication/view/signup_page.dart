@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'login_page.dart'; // You will create this file
+import 'login_page.dart'; 
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -20,7 +20,7 @@ class _SignupPageState extends State<SignupPage> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  // Handle signup function to avoid async gap warning
+  
   void _handleSignup() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -28,20 +28,20 @@ class _SignupPageState extends State<SignupPage> {
       });
 
       try {
-        // Register the user with Firebase Authentication
+        
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
 
-        // Save user data to Firestore
+        
         await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
           'username': _usernameController.text,
           'email': _emailController.text,
         });
 
-        // Show success message
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Account created successfully!'),
@@ -49,7 +49,7 @@ class _SignupPageState extends State<SignupPage> {
           ),
         );
 
-        // Navigate to login page after delay
+        
         await Future.delayed(const Duration(seconds: 2));
         Navigator.pushReplacement(
           context,
@@ -119,7 +119,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    // Username field
+                    
                     _buildTextField(
                       controller: _usernameController,
                       hintText: 'User Name',
@@ -127,7 +127,7 @@ class _SignupPageState extends State<SignupPage> {
                       obscureText: false,
                     ),
                     const SizedBox(height: 16),
-                    // Email field
+                    
                     _buildTextField(
                       controller: _emailController,
                       hintText: 'Email Address',
@@ -135,7 +135,7 @@ class _SignupPageState extends State<SignupPage> {
                       obscureText: false,
                     ),
                     const SizedBox(height: 16),
-                    // Password field
+                    
                     _buildTextField(
                       controller: _passwordController,
                       hintText: 'Password',
@@ -154,7 +154,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Confirm Password field
+                    
                     _buildTextField(
                       controller: _confirmPasswordController,
                       hintText: 'Confirm Password',
@@ -172,31 +172,33 @@ class _SignupPageState extends State<SignupPage> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    // Sign up button
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _handleSignup,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD5C9A6),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _handleSignup,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD5C9A6),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                      ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.black)
-                          : const Text(
-                        'SIGN UP',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Cinzel',
+                        child: _isLoading
+                            ? const CircularProgressIndicator(color: Colors.black)
+                            : const Text(
+                          'SIGN UP',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Cinzel',
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Already have an account link
+                    
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -238,7 +240,7 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  // Reusable text field widget
+  
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,

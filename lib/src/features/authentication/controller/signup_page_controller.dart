@@ -6,7 +6,7 @@ class SignupPageController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Register with email and password
+  
   Future<UserCredential?> registerWithEmailAndPassword(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -19,7 +19,7 @@ class SignupPageController {
     }
   }
 
-  // Save user data to Firestore
+  
   Future<void> saveUserData(SignupPageModel model, String uid) async {
     try {
       await _firestore.collection('users').doc(uid).set(model.toMap());
@@ -28,9 +28,9 @@ class SignupPageController {
     }
   }
 
-  // Handle Firebase Authentication errors
+  
   String _handleFirebaseAuthError(FirebaseAuthException e) {
-    print('Firebase Auth Error: ${e.code} - ${e.message}'); // Add logging
+    print('Firebase Auth Error: ${e.code} - ${e.message}'); 
     switch (e.code) {
       case 'email-already-in-use':
         return 'This email is already registered. Please use a different email.';
@@ -45,7 +45,7 @@ class SignupPageController {
     }
   }
 
-  // Validate form fields
+  
   String? validateUsername(String? value) {
     if (value == null || value.isEmpty) {
       return 'Username is required';
@@ -63,7 +63,7 @@ class SignupPageController {
       return 'Email is required';
     }
 
-    // Simple email validation regex
+    
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(value)) {
       return 'Enter a valid email address';

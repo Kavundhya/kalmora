@@ -5,26 +5,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:http/http.dart' as http;
-
 import '../../model/journal_entry_model.dart';
 import '../../services/journal_service.dart';
+import 'journal_list_screen.dart';
 
-class JournalingEntry extends StatefulWidget {
+class JournalingEntryScreen extends StatefulWidget {
   final String audioFilePath;
   final String recordedDateTime;
   final String? entryId;
 
-  JournalingEntry({
+  JournalingEntryScreen({
     required this.audioFilePath,
     required this.recordedDateTime,
     this.entryId,
   });
 
   @override
-  _JournalingEntryState createState() => _JournalingEntryState();
+  _JournalingEntryScreenState createState() => _JournalingEntryScreenState();
 }
 
-class _JournalingEntryState extends State<JournalingEntry> {
+class _JournalingEntryScreenState extends State<JournalingEntryScreen> {
   final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer();
   final JournalService _journalService = JournalService();
   bool _isPlaying = false;
@@ -37,7 +37,6 @@ class _JournalingEntryState extends State<JournalingEntry> {
   bool _isSaved = false;
   JournalEntryModel? _existingEntry;
 
-  // Elegant color scheme using only 0xFFDCC9A0 and Black
   final Color primaryColor = Color(0xFFDCC9A0);
   final Color textColor = Colors.black;
   final Color darkPrimaryColor = Color(0xFFDCC9A0).withOpacity(0.7);
@@ -81,30 +80,57 @@ class _JournalingEntryState extends State<JournalingEntry> {
     final file = File(filePath);
 
     if (file.existsSync()) {
-      final uri = Uri.parse('https://93a5-34-148-233-245.ngrok-free.app/predict');
+      final uri = Uri.parse('https://5a35-35-229-172-59.ngrok-free.app/predict');
       final request = http.MultipartRequest('POST', uri);
+
       request.files.add(await http.MultipartFile.fromPath('audio', filePath));
 
       try {
         final response = await request.send();
-        if (response.statusCode == 200) {
-          final responseBody = await response.stream.bytesToString();
-          final predictions = jsonDecode(responseBody);
-          final emotion = predictions['predictions'][0]['emotion'];
+        final responseBody = await response.stream.bytesToString();
+        final responseData = jsonDecode(responseBody);
 
+        if (response.statusCode == 200) {
+          final predictions = responseData['predictions'] ?? [];
+          if (predictions.isNotEmpty) {
+            final emotion = predictions[0]['emotion'];
+
+            setState(() {
+              _predictedEmotion = emotion.toUpperCase();
+              _setEmotionBasedContent(emotion.toLowerCase());
+            });
+          } else {
+            setState(() {
+              _predictedEmotion = "NO_RESULT";
+              _voiceAnalysis = "Could not detect emotion";
+              _suggestions = ["Try speaking more clearly", "Try again"];
+              _positiveThought = "Your voice matters";
+            });
+          }
+        } else {
+          final errorMessage = responseData['error'] ?? 'Unknown error occurred';
           setState(() {
-            _predictedEmotion = emotion.toUpperCase();
-            _setEmotionBasedContent(emotion.toLowerCase());
+            _predictedEmotion = "ERROR";
+            _voiceAnalysis = "Analysis failed: $errorMessage";
+            _suggestions = ["Try again later", "Check your connection"];
+            _positiveThought = "Tomorrow will be better";
           });
         }
       } catch (e) {
         setState(() {
-          _predictedEmotion = "ERROR";
-          _voiceAnalysis = "Unable to analyze your voice tone";
-          _suggestions = ["Try again later", "Check your internet connection"];
-          _positiveThought = "Every day is a new opportunity";
+          _predictedEmotion = "NETWORK_ERROR";
+          _voiceAnalysis = "Connection failed: ${e.toString()}";
+          _suggestions = ["Check internet connection", "Retry in a moment"];
+          _positiveThought = "Challenges make us stronger";
         });
       }
+    } else {
+      setState(() {
+        _predictedEmotion = "FILE_ERROR";
+        _voiceAnalysis = "Audio file not found";
+        _suggestions = ["Record again", "Check storage permissions"];
+        _positiveThought = "Every new attempt brings progress";
+      });
     }
   }
 
@@ -153,9 +179,9 @@ class _JournalingEntryState extends State<JournalingEntry> {
       }
 
       final entry = JournalEntryModel(
-        id: '', // Firestore will generate ID
+        id: '',
         userId: user.uid,
-        audioFileUrl: '', // Will be set after upload
+        audioFileUrl: '',
         localAudioPath: widget.audioFilePath,
         recordedDateTime: widget.recordedDateTime,
         emotion: _predictedEmotion.toLowerCase(),
@@ -176,6 +202,15 @@ class _JournalingEntryState extends State<JournalingEntry> {
             backgroundColor: Colors.black,
           )
       );
+
+      
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => JournalListScreen()),
+              (Route<dynamic> route) => false,
+        );
+      });
     } catch (e) {
       setState(() => _isSaving = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -303,7 +338,6 @@ class _JournalingEntryState extends State<JournalingEntry> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date display
               Container(
                 padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 decoration: BoxDecoration(
@@ -329,7 +363,6 @@ class _JournalingEntryState extends State<JournalingEntry> {
               ),
               SizedBox(height: 25),
 
-              // Mood detection section
               if (_predictedEmotion.isNotEmpty) ...[
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -357,7 +390,6 @@ class _JournalingEntryState extends State<JournalingEntry> {
                 SizedBox(height: 25),
               ],
 
-              // Audio player
               Container(
                 padding: EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -405,7 +437,6 @@ class _JournalingEntryState extends State<JournalingEntry> {
               ),
               SizedBox(height: 30),
 
-              // Analyze button
               if (_predictedEmotion.isEmpty)
                 Center(
                   child: ElevatedButton(
@@ -430,7 +461,6 @@ class _JournalingEntryState extends State<JournalingEntry> {
                   ),
                 ),
 
-              // Recommendations
               if (_predictedEmotion.isNotEmpty) ...[
                 SizedBox(height: 25),
                 Container(

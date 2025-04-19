@@ -1,10 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
-
+import '../../controller/recording_controller.dart';
 import 'journaling_entry.dart';
 
 class RecordingPage extends StatefulWidget {
@@ -13,16 +9,14 @@ class RecordingPage extends StatefulWidget {
 }
 
 class _RecordingPageState extends State<RecordingPage> {
-  final FlutterSoundRecorder _soundRecorder = FlutterSoundRecorder();
-  bool _isRecording = false;
-  String _audioFilePath = '';
+  final RecordingController _controller = RecordingController();
   String _currentDateTime = '';
 
   @override
   void initState() {
     super.initState();
-    _initRecorder();
     _updateDateTime();
+    _controller.initRecorder();
   }
 
   void _updateDateTime() {
@@ -33,61 +27,16 @@ class _RecordingPageState extends State<RecordingPage> {
     Future.delayed(Duration(minutes: 1), _updateDateTime);
   }
 
-  Future<void> _initRecorder() async {
-    await Permission.microphone.request();
-    if (await Permission.microphone.isGranted) {
-      await _soundRecorder.openRecorder();
-    } else {
-      print("Microphone permission denied.");
-    }
-  }
-
-  Future<String> getFilePath(String fileName) async {
-    final directory = await getApplicationDocumentsDirectory();
-    return '${directory.path}/$fileName';
-  }
-
-  Future<void> _startRecording() async {
-    final filePath = await getFilePath('audio.mp4');
-    _audioFilePath = filePath;
-    await _soundRecorder.startRecorder(toFile: filePath);
-    setState(() {
-      _isRecording = true;
-    });
-    print("Recording started, file saved at: $filePath");
-  }
-
-  Future<void> _stopRecording() async {
-    try {
-      await _soundRecorder.stopRecorder();
-      setState(() {
-        _isRecording = false;
-      });
-      print("Recording stopped and saved!");
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => JournalingEntry(
-            audioFilePath: _audioFilePath,
-            recordedDateTime: _currentDateTime,
-          ),
-        ),
-      );
-    } catch (e) {
-      print("Error stopping recorder: $e");
-    }
-  }
-
   @override
   void dispose() {
-    _soundRecorder.closeRecorder();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFD2C0A3), // Your specified beige
+      backgroundColor: Color(0xFFD2C0A3),
       body: Center(
         child: Container(
           width: MediaQuery.of(context).size.width * 0.85,
@@ -147,19 +96,35 @@ class _RecordingPageState extends State<RecordingPage> {
               Column(
                 children: [
                   GestureDetector(
-                    onTap: _isRecording ? _stopRecording : _startRecording,
+                    onTap: () async {
+                      if (_controller.isRecording) {
+                        await _controller.stopRecording();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => JournalingEntryScreen(
+                              audioFilePath: _controller.audioFilePath,
+                              recordedDateTime: _currentDateTime,
+                            ),
+                          ),
+                        );
+                      } else {
+                        await _controller.startRecording();
+                      }
+                      setState(() {});
+                    },
                     child: AnimatedContainer(
                       duration: Duration(milliseconds: 300),
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: _isRecording
+                        color: _controller.isRecording
                             ? Colors.black.withOpacity(0.1)
                             : Colors.transparent,
                         border: Border.all(
                           color: Colors.black,
-                          width: _isRecording ? 3 : 2,
+                          width: _controller.isRecording ? 3 : 2,
                         ),
                       ),
                       child: Icon(
@@ -171,7 +136,7 @@ class _RecordingPageState extends State<RecordingPage> {
                   ),
                   SizedBox(height: 32),
                   Text(
-                    _isRecording ? "RECORDING..." : "TAP TO BEGIN",
+                    _controller.isRecording ? "RECORDING..." : "TAP TO BEGIN",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -181,7 +146,7 @@ class _RecordingPageState extends State<RecordingPage> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    _isRecording ? "Tap to finish" : "Your thoughts matter",
+                    _controller.isRecording ? "Tap to finish" : "Your thoughts matter",
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.black.withOpacity(0.7),
@@ -190,7 +155,7 @@ class _RecordingPageState extends State<RecordingPage> {
                   ),
                 ],
               ),
-              SizedBox(), // Empty spacer for balance
+              SizedBox(),
             ],
           ),
         ),

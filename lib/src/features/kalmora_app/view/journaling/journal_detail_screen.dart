@@ -15,24 +15,21 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
 
-  // Define your color scheme
   final Color primaryColor = Color(0xFFDCC9A0);
-  final Color darkAccent = Color(0xFF8A7755);  // Darker shade of primary
-  final Color lightAccent = Color(0xFFF0E8D8);  // Lighter shade of primary
+  final Color darkAccent = Color(0xFF8A7755);
+  final Color lightAccent = Color(0xFFF0E8D8);
   final Color textColor = Colors.black;
 
   @override
   void initState() {
     super.initState();
 
-    // Listen for player state changes
     _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
       setState(() {
         _isPlaying = state == PlayerState.playing;
       });
     });
 
-    // Listen for completion to reset button state
     _audioPlayer.onPlayerComplete.listen((_) {
       setState(() {
         _isPlaying = false;
@@ -50,7 +47,6 @@ class _JournalDetailScreenState extends State<JournalDetailScreen> {
     if (_isPlaying) {
       await _audioPlayer.pause();
     } else {
-      // If starting from beginning or resuming
       if (_audioPlayer.source == null) {
         await _audioPlayer.play(UrlSource(widget.entry.audioFileUrl));
       } else {

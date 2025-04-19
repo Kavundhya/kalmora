@@ -1,14 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kalmora/src/features/authentication/view/logout_page.dart';
 import 'package:kalmora/src/features/kalmora_app/view/journaling/RecordingPage.dart';
-import '../../../authentication/controller/logout_page_controller.dart';
-import '../../../authentication/model/logout_page_model.dart';
-import '../../../authentication/view/login_page.dart';
+import 'package:kalmora/src/features/authentication/view/login_page.dart';
+import 'package:kalmora/src/features/kalmora_app/controller/dashboard_controller.dart';
+import 'package:kalmora/src/features/kalmora_app/model/dashboard_model.dart';
 import 'journal_list_screen.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -21,117 +16,21 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  late String formattedDate;
-  late Timer _timer;
-  String _username = "USER01";
-  bool _isLoading = true;
-  String? _userEmail;
-  final LogoutController _logoutController = LogoutController();
-  int _currentQuoteIndex = 0;
-  late Timer _quoteTimer;
-  List<bool> _bookmarkedQuotes = [];
-  final _prefsKey = 'bookmarkedQuotes';
-
-  final List<Map<String, String>> _quotes = [
-    {
-      "text": "The quieter you become, the more you can hear.",
-      "author": "Ram Dass"
-    },
-    {
-      "text": "Your calm mind is the ultimate weapon against your challenges.",
-      "author": "Bryant McGill"
-    },
-    {
-      "text": "Mindfulness isn't difficult, we just need to remember to do it.",
-      "author": "Sharon Salzberg"
-    },
-  ];
+  late DashboardController _controller;
+  late DashboardModel _model;
 
   @override
   void initState() {
     super.initState();
-    _updateTime();
-    _timer = Timer.periodic(const Duration(minutes: 1), (timer) => _updateTime());
-    _loadUserData();
-    _initializeBookmarks();
-    _startQuoteRotation();
+    _model = DashboardModel(username: widget.username);
+    _controller = DashboardController(_model);
+    _controller.init();
+    _controller.addListener(_updateState);
   }
 
-  Future<void> _initializeBookmarks() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedBookmarks = prefs.getStringList(_prefsKey);
-
-    setState(() {
-      _bookmarkedQuotes = List.generate(_quotes.length, (index) {
-        return savedBookmarks?.contains(index.toString()) ?? false;
-      });
-    });
-  }
-
-  Future<void> _toggleBookmark(int index) async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _bookmarkedQuotes[index] = !_bookmarkedQuotes[index];
-    });
-
-    final bookmarkedIndices = _bookmarkedQuotes
-        .asMap()
-        .entries
-        .where((entry) => entry.value)
-        .map((entry) => entry.key.toString())
-        .toList();
-
-    await prefs.setStringList(_prefsKey, bookmarkedIndices);
-  }
-
-  void _startQuoteRotation() {
-    _quoteTimer = Timer.periodic(const Duration(seconds: 8), (timer) {
-      setState(() {
-        _currentQuoteIndex = (_currentQuoteIndex + 1) % _quotes.length;
-      });
-    });
-  }
-
-  void _updateTime() {
-    setState(() {
-      formattedDate = DateFormat('MMMM dd, yyyy | EEEE hh:mm a').format(DateTime.now());
-    });
-  }
-
-  Future<void> _loadUserData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      if (widget.username != null && widget.username!.isNotEmpty) {
-        setState(() {
-          _username = widget.username!;
-        });
-      }
-
-      User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        _userEmail = currentUser.email;
-
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser.uid)
-            .get();
-
-        if (userDoc.exists) {
-          Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-          setState(() {
-            _username = userData['username'] ?? "USER01";
-          });
-        }
-      }
-    } catch (e) {
-      print("Error loading user data: $e");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+  void _updateState() {
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -160,7 +59,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 const SizedBox(height: 15),
                 Text(
-                  "Hi, $_username",
+                  "Hi, ${_controller.username}",
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -169,7 +68,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  _userEmail ?? "user@gmail.com",
+                  _controller.userEmail ?? "user@gmail.com",
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[400],
@@ -181,23 +80,21 @@ class _DashboardPageState extends State<DashboardPage> {
                     Navigator.of(context).pop();
                     _showLoadingDialog();
                     try {
-                      final logoutModel = LogoutPageModel(
-                        clearUserData: true,
-                        onLogoutSuccess: () {
-                          Navigator.of(context, rootNavigator: true).pop();
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (context) => LogoutPage()),
-                                (route) => false,
-                          );
-                        },
-                        onLogoutError: (error) {
-                          Navigator.of(context, rootNavigator: true).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Logout failed: $error')),
-                          );
-                        },
+                      await _controller.logout(
+                          onSuccess: () {
+                            Navigator.of(context, rootNavigator: true).pop();
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (context) => LogoutPage()),
+                                  (route) => false,
+                            );
+                          },
+                          onError: (error) {
+                            Navigator.of(context, rootNavigator: true).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Logout failed: $error')),
+                            );
+                          }
                       );
-                      await _logoutController.logout(logoutModel);
                     } catch (e) {
                       if (Navigator.of(context, rootNavigator: true).canPop()) {
                         Navigator.of(context, rootNavigator: true).pop();
@@ -287,183 +184,256 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile & Greeting
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: _showProfilePopup,
-                  child: const CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.person, size: 30, color: Colors.black),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: _showProfilePopup,
+                    child: Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _controller.isLoading
+                          ? const SizedBox(
+                        width: 120,
+                        height: 24,
+                        child: LinearProgressIndicator(
+                          backgroundColor: Color(0xFFDCC9A0),
+                          color: Colors.grey,
+                        ),
+                      )
+                          : Text(
+                        "Hello, ${_controller.username}!",
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        _controller.formattedDate,
+                        style: const TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RecordingPage()),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.mic_none, color: Color(0xFFDCC9A0), size: 24),
+                      SizedBox(width: 12),
+                      Text(
+                        "START VOICE JOURNALING",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.8,
+                          color: Color(0xFFDCC9A0),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 15),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _isLoading
-                        ? const SizedBox(
-                      width: 120,
-                      height: 24,
-                      child: LinearProgressIndicator(
-                        backgroundColor: Color(0xFFDCC9A0),
-                        color: Colors.grey,
-                      ),
-                    )
-                        : Text(
-                      "Hello, $_username!",
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+
+              
+              const SizedBox(height: 25),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0, bottom: 12.0),
+                child: Text(
+                  "TODAY'S PROMPT",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.5,
+                    color: Colors.black.withOpacity(0.6),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: _controller.cyclePrompt,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.black.withOpacity(0.1),
+                      width: 1,
                     ),
-                    Text(
-                      formattedDate,
-                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _controller.currentPrompt,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.4,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.lightbulb_outline,
+                            size: 18,
+                            color: Colors.black.withOpacity(0.6),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            "Tap for a new prompt",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+
+              
+              if (_controller.hasBookmarkedQuotes) ...[
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Text(
+                        "WORDS FOR REFLECTION",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.5,
+                          color: Colors.black.withOpacity(0.6),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.03),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.black.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '"${_controller.currentQuote['text']}"',
+                            style: TextStyle(
+                              fontSize: 16,
+                              height: 1.4,
+                              color: Colors.black,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "- ${_controller.currentQuote['author']}",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black.withOpacity(0.6),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _controller.toggleBookmark(_controller.currentQuoteIndex),
+                                child: Icon(
+                                  _controller.isCurrentQuoteBookmarked
+                                      ? Icons.bookmark
+                                      : Icons.bookmark_border,
+                                  size: 20,
+                                  color: _controller.isCurrentQuoteBookmarked
+                                      ? Colors.black
+                                      : Colors.black.withOpacity(0.4),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_controller.quotesCount, (index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _controller.currentQuoteIndex == index
+                                  ? Colors.black.withOpacity(0.8)
+                                  : Colors.black.withOpacity(0.2),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          'assets/images/DashBoard.png',
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ],
-            ),
-            const SizedBox(height: 30),
-
-            // Journaling Button
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RecordingPage()),
-                );
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.mic_none, color: Color(0xFFDCC9A0), size: 24),
-                    SizedBox(width: 12),
-                    Text(
-                      "START VOICE JOURNALING",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.8,
-                        color: Color(0xFFDCC9A0),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Minimalist Quote Display
-            if (_bookmarkedQuotes.isNotEmpty) ...[
-              Column(
-                children: [
-                  SizedBox(height: 30),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text(
-                      "WORDS FOR REFLECTION",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.5,
-                        color: Colors.black.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.03),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Colors.black.withOpacity(0.1),
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '"${_quotes[_currentQuoteIndex]['text']}"',
-                          style: TextStyle(
-                            fontSize: 16,
-                            height: 1.4,
-                            color: Colors.black,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "- ${_quotes[_currentQuoteIndex]['author']}",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.black.withOpacity(0.6),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => _toggleBookmark(_currentQuoteIndex),
-                              child: Icon(
-                                _bookmarkedQuotes[_currentQuoteIndex]
-                                    ? Icons.bookmark
-                                    : Icons.bookmark_border,
-                                size: 20,
-                                color: _bookmarkedQuotes[_currentQuoteIndex]
-                                    ? Colors.black
-                                    : Colors.black.withOpacity(0.4),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_quotes.length, (index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _currentQuoteIndex == index
-                                ? Colors.black.withOpacity(0.8)
-                                : Colors.black.withOpacity(0.2),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ],
-              ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -471,8 +441,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   void dispose() {
-    _timer.cancel();
-    _quoteTimer.cancel();
+    _controller.dispose();
     super.dispose();
   }
 }

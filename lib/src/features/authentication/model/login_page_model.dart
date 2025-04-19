@@ -11,17 +11,17 @@ class LoginPageModel {
     this.rememberMe = false,
   });
 
-  // Convert model to a Map for Firebase
+  
   Map<String, dynamic> toMap() {
     return {
       'username': username,
       'email': email,
       'rememberMe': rememberMe,
-      // We don't store the password in the map for security
+      
     };
   }
 
-  // Create model from a Map (from Firebase)
+  
   factory LoginPageModel.fromMap(Map<String, dynamic> map) {
     return LoginPageModel(
       username: map['username'] ?? '',
@@ -30,7 +30,7 @@ class LoginPageModel {
     );
   }
 
-  // Create a copy of this model with given fields replaced with new values
+  
   LoginPageModel copyWith({
     String? username,
     String? email,
