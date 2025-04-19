@@ -1,16 +1,30 @@
-# kalmora
+# Kalmora - Voice Emotion Journaling App
 
-My Mobile Application
+![Kalmora Logo](docs/screenshots/app_logo.png)
+
+Kalmora is an innovative mobile journaling application that uses voice emotion detection technology for better emotional awareness and mental wellness. Unlike traditional journaling apps that rely on self-reported emotions, Kalmora objectively detects emotional states through voice analysis.
+
+## Key Features
+
+- 🎤 Voice journaling with real-time recording
+- 🎭 Emotion detection (7 emotions: happiness, sadness, anger, fear, disgust, neutral, pleasant surprise)
+- 💡 Personalized mental wellness recommendations
+- 🔒 Secure authentication and data encryption
+- 📊 Emotion trend visualization over time
+
+## Technology Stack
+
+- *Frontend*: Flutter (Android/iOS)
+- *Backend*: Flask API
+- *Machine Learning*: Wav2Vec2 model fine-tuned on TESS dataset
+- *Database*: Firebase (Authentication, Firestore, Storage)
+- *DevOps*: GitHub Actions (CI/CD)
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter SDK (v3.7.0+)
+- Python (v3.8+)
+- Firebase account
+- Google Colab (for model training)
