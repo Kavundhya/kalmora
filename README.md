@@ -14,7 +14,7 @@ Kalmora is an innovative mobile journaling application that uses voice emotion d
 
 ## Technology Stack
 
-- *Frontend*: Flutter (Android/iOS)
+- *Frontend*: Flutter (Android)
 - *Backend*: Flask API
 - *Machine Learning*: Wav2Vec2 model fine-tuned on TESS dataset
 - *Database*: Firebase (Authentication, Firestore, Storage)
